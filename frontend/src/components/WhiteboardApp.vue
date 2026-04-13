@@ -153,7 +153,7 @@ function formatDate(d) {
 </script>
 
 <style scoped>
-.whiteboard-page { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+.whiteboard-page { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .board-list-view { padding: 20px; }
 .board-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .board-header h2 { margin: 0; color: #eee; }

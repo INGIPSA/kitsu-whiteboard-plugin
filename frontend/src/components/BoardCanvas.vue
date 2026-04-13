@@ -2263,7 +2263,7 @@ export default {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   flex: 1;
   position: relative;
   overflow: hidden;
@@ -2272,9 +2272,10 @@ export default {
 .board-toolbar {
   display: flex;
   align-items: center;
-  padding: 4px 8px;
+  padding: 6px 8px;
   background: var(--background-alt, #fafafa);
   border-bottom: 1px solid var(--border, #eee);
+  border-top: 1px solid var(--border, #eee);
   gap: 2px;
   flex-shrink: 0;
   flex-wrap: nowrap;
