@@ -1,0 +1,10 @@
+/* Kitsu plugin dark theme defaults */
+:root {
+  --bg-page: #1e1e2e;
+  --bg-card: #2a2a2a;
+  --bg-input: #1e1e1e;
+  --border: #333;
+  --text: #eee;
+  --text-secondary: #888;
+  --accent: #3b82f6;
+}

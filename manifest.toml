@@ -1,0 +1,12 @@
+id = "whiteboard"
+name = "Whiteboard"
+description = "Visual review boards for production teams."
+version = "0.1.0"
+maintainer = "INGIPSA <pb@kariana.ai>"
+website = "github.com/INGIPSA/kitsu-whiteboard-plugin"
+license = "AGPL-3.0-only"
+icon = "pen-tool"
+frontend_project_enabled = true
+frontend_studio_enabled = false
+maintainer_name = "INGIPSA"
+maintainer_email = "pb@kariana.ai"
