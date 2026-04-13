@@ -1,5 +1,3 @@
-import json
-
 from flask import request
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
@@ -7,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from zou.app.mixin import ArgsMixin
 from zou.app.services import persons_service
 
-from .models import Board
+from . import services
 
 
 class BoardsResource(Resource, ArgsMixin):
@@ -18,9 +16,7 @@ class BoardsResource(Resource, ArgsMixin):
         project_id = self.get_text_parameter("project_id")
         if not project_id:
             return {"error": "project_id required"}, 400
-
-        boards = Board.get_all_by(project_id=project_id)
-        return [b.present() for b in boards]
+        return services.get_boards_for_project(project_id)
 
     @jwt_required()
     def post(self):
@@ -31,13 +27,11 @@ class BoardsResource(Resource, ArgsMixin):
             return {"error": "project_id required"}, 400
 
         current_user = persons_service.get_current_user()
-        board = Board.create(
+        board = services.create_board(
             project_id=project_id,
             name=data.get("name", "New Board"),
             visibility=data.get("visibility", "private"),
-            canvas_data=json.dumps(data["canvas_data"])
-            if data.get("canvas_data")
-            else None,
+            canvas_data=data.get("canvas_data"),
             created_by=current_user["id"],
         )
         return board.present(), 201
@@ -48,7 +42,7 @@ class BoardResource(Resource, ArgsMixin):
     @jwt_required()
     def get(self, board_id):
         """Get a single board."""
-        board = Board.get(board_id)
+        board = services.get_board(board_id)
         if not board:
             return {"error": "Board not found"}, 404
         return board.present()
@@ -56,29 +50,18 @@ class BoardResource(Resource, ArgsMixin):
     @jwt_required()
     def put(self, board_id):
         """Update a board."""
-        board = Board.get(board_id)
+        board = services.get_board(board_id)
         if not board:
             return {"error": "Board not found"}, 404
-
         data = request.get_json()
-        update = {}
-        if "name" in data:
-            update["name"] = data["name"]
-        if "visibility" in data:
-            update["visibility"] = data["visibility"]
-        if "canvas_data" in data:
-            update["canvas_data"] = json.dumps(data["canvas_data"])
-        if "thumbnail" in data:
-            update["thumbnail"] = data["thumbnail"]
-
-        board.update(update)
+        services.update_board(board, data)
         return board.present()
 
     @jwt_required()
     def delete(self, board_id):
         """Delete a board."""
-        board = Board.get(board_id)
+        board = services.get_board(board_id)
         if not board:
             return {"error": "Board not found"}, 404
-        board.delete()
+        services.delete_board(board)
         return "", 204

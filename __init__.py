@@ -6,5 +6,17 @@ routes = [
 ]
 
 
+def pre_install(manifest):
+    pass
+
+
 def post_install(manifest):
+    pass
+
+
+def pre_uninstall(manifest):
+    pass
+
+
+def post_uninstall(manifest):
     pass
