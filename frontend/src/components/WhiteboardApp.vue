@@ -175,7 +175,7 @@ function formatDate(d) {
 .card-delete:hover { background: rgba(255,0,0,0.15); color: #e53e3e; }
 .board-card-date { font-size: 11px; color: #888; }
 .empty { text-align: center; padding: 60px 20px; color: #888; }
-.editor-header { display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid #333; background: #2a2a2a; }
+.editor-header { display: flex; align-items: center; gap: 12px; padding: 8px 16px; padding-top: 50px; border-bottom: 1px solid #333; background: #2a2a2a; }
 .board-name { font-size: 16px; font-weight: 500; color: #fff; flex: 1; }
 .editor-body { display: flex; flex: 1; overflow: hidden; }
 </style>
