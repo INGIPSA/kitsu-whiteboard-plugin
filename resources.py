@@ -5,7 +5,7 @@ from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 
 from zou.app.mixin import ArgsMixin
-from zou.app.utils import permissions
+from zou.app.services import persons_service
 
 from .models import Board
 
@@ -19,10 +19,7 @@ class BoardsResource(Resource, ArgsMixin):
         if not project_id:
             return {"error": "project_id required"}, 400
 
-        user_service = permissions.get_current_user()
-        boards = Board.query.filter_by(project_id=project_id).order_by(
-            Board.updated_at.desc()
-        ).all()
+        boards = Board.get_all_by(project_id=project_id)
         return [b.present() for b in boards]
 
     @jwt_required()
@@ -33,7 +30,7 @@ class BoardsResource(Resource, ArgsMixin):
         if not project_id:
             return {"error": "project_id required"}, 400
 
-        current_user = permissions.get_current_user()
+        current_user = persons_service.get_current_user()
         board = Board.create(
             project_id=project_id,
             name=data.get("name", "New Board"),
