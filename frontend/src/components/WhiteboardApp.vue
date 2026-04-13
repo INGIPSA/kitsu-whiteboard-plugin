@@ -15,13 +15,32 @@
           <div class="board-card-info">
             <div class="board-card-top">
               <span class="board-card-name">{{ b.name }}</span>
-              <button
-                class="card-action-btn card-delete"
-                title="Delete"
-                @click.stop="confirmDelete(b)"
-              >
-                <trash2-icon :size="12" />
-              </button>
+              <div class="card-actions">
+                <button
+                  class="card-action-btn"
+                  :title="b.visibility || 'private'"
+                  @click.stop="cycleVisibility(b)"
+                >
+                  <lock-icon :size="12" v-if="!b.visibility || b.visibility === 'private'" />
+                  <users-icon :size="12" v-else-if="b.visibility === 'team'" />
+                  <globe-icon :size="12" v-else />
+                </button>
+                <button
+                  class="card-action-btn"
+                  :class="{ disabled: !b.visibility || b.visibility === 'private' }"
+                  title="Copy link"
+                  @click.stop="copyLink(b)"
+                >
+                  <link-icon :size="12" />
+                </button>
+                <button
+                  class="card-action-btn card-delete"
+                  title="Delete"
+                  @click.stop="confirmDelete(b)"
+                >
+                  <trash2-icon :size="12" />
+                </button>
+              </div>
             </div>
             <span class="board-card-date">{{ formatDate(b.updated_at) }}</span>
           </div>
@@ -56,7 +75,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Trash2Icon } from 'lucide-vue-next'
+import { GlobeIcon, LinkIcon, LockIcon, Trash2Icon, UsersIcon } from 'lucide-vue-next'
 import { useBoardsStore } from '../stores/boards'
 import { useEntities } from '../composables/useEntities'
 import BoardCanvas from './BoardCanvas.vue'
@@ -105,6 +124,18 @@ async function saveBoard() {
   pendingData = null
 }
 
+async function cycleVisibility(board) {
+  const cycle = { private: 'team', team: 'public', public: 'private' }
+  const next = cycle[board.visibility || 'private']
+  await store.saveBoard({ ...board, visibility: next })
+}
+
+function copyLink(board) {
+  if (!board.visibility || board.visibility === 'private') return
+  const url = window.location.href.split('#')[0] + '#/?board_id=' + board.id
+  navigator.clipboard.writeText(url).catch(() => {})
+}
+
 async function confirmDelete(board) {
   if (confirm(`Delete "${board.name}"?`)) {
     await store.deleteBoard(board.id)
@@ -137,8 +168,10 @@ function formatDate(d) {
 .board-card-info { padding: 10px 12px; }
 .board-card-top { display: flex; align-items: center; justify-content: space-between; }
 .board-card-name { font-size: 14px; font-weight: 500; color: #fff; }
-.card-action-btn { width: 22px; height: 22px; border: none; background: transparent; color: #666; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; }
-.board-card:hover .card-action-btn { opacity: 1; }
+.card-actions { display: flex; gap: 2px; }
+.card-action-btn { width: 22px; height: 22px; border: none; background: transparent; color: #999; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.card-action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.card-action-btn.disabled { opacity: 0.3; pointer-events: none; }
 .card-delete:hover { background: rgba(255,0,0,0.15); color: #e53e3e; }
 .board-card-date { font-size: 11px; color: #888; }
 .empty { text-align: center; padding: 60px 20px; color: #888; }

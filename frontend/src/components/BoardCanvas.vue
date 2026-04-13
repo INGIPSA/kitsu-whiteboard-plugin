@@ -140,6 +140,14 @@
           v-model="strokeColor"
           title="Stroke Color"
         />
+        <button
+          class="clear-color-btn"
+          :class="{ active: strokeColor === 'transparent' }"
+          title="No Stroke"
+          @click="strokeColor = 'transparent'"
+        >
+          /
+        </button>
         <div class="color-with-clear">
           <input
             type="color"
