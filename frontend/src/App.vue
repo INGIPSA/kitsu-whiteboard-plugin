@@ -19,11 +19,16 @@ const isDark = computed(() => route.query.dark_theme === 'true')
   box-sizing: border-box;
 }
 
+html, body, #app {
+  height: 100%;
+  overflow: hidden;
+}
+
 .whiteboard-app {
   background: #ffffff;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     sans-serif;
-  min-height: 100vh;
+  height: 100%;
 }
 
 .whiteboard-app.dark {

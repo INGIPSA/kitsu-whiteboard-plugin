@@ -140,12 +140,22 @@
           v-model="strokeColor"
           title="Stroke Color"
         />
-        <input
-          type="color"
-          class="color-picker"
-          v-model="fillColor"
-          title="Fill Color"
-        />
+        <div class="color-with-clear">
+          <input
+            type="color"
+            class="color-picker"
+            v-model="fillColor"
+            title="Fill Color"
+          />
+          <button
+            class="clear-color-btn"
+            :class="{ active: fillColor === 'transparent' }"
+            title="No Fill (transparent)"
+            @click="fillColor = 'transparent'"
+          >
+            /
+          </button>
+        </div>
         <button
           class="tool-btn swap-btn"
           @click="swapColors"
@@ -164,13 +174,24 @@
           v-model="fontSize"
           title="Font Size"
         >
+          <option :value="8">8</option>
+          <option :value="9">9</option>
+          <option :value="10">10</option>
+          <option :value="11">11</option>
           <option :value="12">12</option>
           <option :value="14">14</option>
+          <option :value="16">16</option>
           <option :value="18">18</option>
+          <option :value="20">20</option>
           <option :value="24">24</option>
+          <option :value="28">28</option>
           <option :value="32">32</option>
+          <option :value="36">36</option>
           <option :value="48">48</option>
+          <option :value="64">64</option>
           <option :value="72">72</option>
+          <option :value="96">96</option>
+          <option :value="128">128</option>
         </select>
         <select class="stroke-width-select" v-model="fontFamily" title="Font">
           <option value="Inter, Arial, sans-serif">Inter</option>
@@ -594,7 +615,10 @@ export default {
     },
     fontFamily(val) {
       const obj = this.canvas?.getActiveObject()
-      if (obj && (obj.type === 'i-text' || obj.type === 'text')) {
+      if (
+        obj &&
+        ['i-text', 'text', 'textbox'].includes(obj.type)
+      ) {
         obj.set('fontFamily', val)
         this.canvas.renderAll()
         this.emitChange()
@@ -602,8 +626,11 @@ export default {
     },
     fontSize(val) {
       const obj = this.canvas?.getActiveObject()
-      if (obj && (obj.type === 'i-text' || obj.type === 'text')) {
-        obj.set('fontSize', val)
+      if (
+        obj &&
+        ['i-text', 'text', 'textbox'].includes(obj.type)
+      ) {
+        obj.set('fontSize', Number(val))
         this.canvas.renderAll()
         this.emitChange()
       }
@@ -2228,7 +2255,7 @@ export default {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   flex: 1;
   position: relative;
   overflow: hidden;
@@ -2291,6 +2318,32 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   padding: 1px;
+}
+
+.color-with-clear {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.clear-color-btn {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #999;
+  border-radius: 2px;
+  background: #fff;
+  color: #e53e3e;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: -4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clear-color-btn.active {
+  border-color: #e53e3e;
 }
 
 .stroke-width-select {

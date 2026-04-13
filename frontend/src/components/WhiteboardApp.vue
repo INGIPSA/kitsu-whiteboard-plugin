@@ -13,7 +13,16 @@
             <span v-else>Board</span>
           </div>
           <div class="board-card-info">
-            <span class="board-card-name">{{ b.name }}</span>
+            <div class="board-card-top">
+              <span class="board-card-name">{{ b.name }}</span>
+              <button
+                class="card-action-btn card-delete"
+                title="Delete"
+                @click.stop="confirmDelete(b)"
+              >
+                <trash2-icon :size="12" />
+              </button>
+            </div>
             <span class="board-card-date">{{ formatDate(b.updated_at) }}</span>
           </div>
         </div>
@@ -47,6 +56,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { Trash2Icon } from 'lucide-vue-next'
 import { useBoardsStore } from '../stores/boards'
 import { useEntities } from '../composables/useEntities'
 import BoardCanvas from './BoardCanvas.vue'
@@ -95,6 +105,12 @@ async function saveBoard() {
   pendingData = null
 }
 
+async function confirmDelete(board) {
+  if (confirm(`Delete "${board.name}"?`)) {
+    await store.deleteBoard(board.id)
+  }
+}
+
 function exportPNG() {
   canvasRef.value?.exportAsPNG()
 }
@@ -106,7 +122,7 @@ function formatDate(d) {
 </script>
 
 <style scoped>
-.whiteboard-page { display: flex; flex-direction: column; height: 100vh; }
+.whiteboard-page { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
 .board-list-view { padding: 20px; }
 .board-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .board-header h2 { margin: 0; color: #eee; }
@@ -119,7 +135,11 @@ function formatDate(d) {
 .board-card-preview { height: 140px; display: flex; align-items: center; justify-content: center; background: #1e1e1e; color: #666; overflow: hidden; }
 .board-card-preview img { width: 100%; height: 100%; object-fit: cover; }
 .board-card-info { padding: 10px 12px; }
-.board-card-name { font-size: 14px; font-weight: 500; color: #fff; display: block; }
+.board-card-top { display: flex; align-items: center; justify-content: space-between; }
+.board-card-name { font-size: 14px; font-weight: 500; color: #fff; }
+.card-action-btn { width: 22px; height: 22px; border: none; background: transparent; color: #666; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; }
+.board-card:hover .card-action-btn { opacity: 1; }
+.card-delete:hover { background: rgba(255,0,0,0.15); color: #e53e3e; }
 .board-card-date { font-size: 11px; color: #888; }
 .empty { text-align: center; padding: 60px 20px; color: #888; }
 .editor-header { display: flex; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid #333; background: #2a2a2a; }
