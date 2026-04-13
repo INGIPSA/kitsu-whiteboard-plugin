@@ -41,19 +41,30 @@ Think Miro/FigJam but integrated directly into your Kitsu production pipeline wi
 
 ## Installation
 
-```bash
-# Build frontend
-cd frontend && npm install && npm run build && cd ..
+### Quick install (recommended)
 
-# Install plugin into Zou
-python zou/cli.py install-plugin --path ./kitsu-whiteboard-plugin
+1. Download `kitsu-whiteboard-plugin.zip` from the [latest release](https://github.com/INGIPSA/kitsu-whiteboard-plugin/releases/latest)
+2. Install on your Zou server:
+
+```bash
+zou install-plugin kitsu-whiteboard-plugin.zip
+```
+
+3. Restart Zou. The plugin appears in the production sidebar menu.
+
+### Install from source
+
+```bash
+git clone https://github.com/INGIPSA/kitsu-whiteboard-plugin.git
+cd kitsu-whiteboard-plugin/frontend && npm install && npm run build && cd ..
+zou install-plugin --path .
 ```
 
 ## Development
 
 ```bash
 # Backend — start Zou normally
-python zou/cli.py start
+zou start
 
 # Frontend — hot reload
 cd frontend && npm run dev
@@ -61,9 +72,8 @@ cd frontend && npm run dev
 
 ## Requirements
 
-- Kitsu / Zou >= 1.0.23
-- Python 3.10+
-- Node.js 18+
+- Kitsu / Zou with plugin support
+- PostgreSQL
 
 ## License
 
