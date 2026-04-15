@@ -41,24 +41,65 @@ Think Miro/FigJam but integrated directly into your Kitsu production pipeline wi
 
 ## Installation
 
-### Quick install (recommended)
+### Quick install (recommended — ZIP)
 
-1. Download `kitsu-whiteboard-plugin.zip` from the [latest release](https://github.com/INGIPSA/kitsu-whiteboard-plugin/releases/latest)
-2. Install on your Zou server:
+1. Download `kitsu-whiteboard-plugin.zip` from the [latest release](https://github.com/INGIPSA/kitsu-whiteboard-plugin/releases/latest).
+2. Install on your Zou server (activate your Zou venv first if applicable):
 
 ```bash
-zou install-plugin kitsu-whiteboard-plugin.zip
+zou install-plugin --path ~/kitsu-whiteboard-plugin.zip
 ```
 
 3. Restart Zou. The plugin appears in the production sidebar menu.
 
 ### Install from source
 
+Prebuilt frontend assets are committed to the repo, so Node.js is **not** required on the server.
+
 ```bash
-git clone https://github.com/INGIPSA/kitsu-whiteboard-plugin.git
-cd kitsu-whiteboard-plugin/frontend && npm install && npm run build && cd ..
-zou install-plugin --path .
+git clone https://github.com/INGIPSA/kitsu-whiteboard-plugin.git ~/kitsu-whiteboard-plugin
+cd ~                                           # ⚠️ run install from OUTSIDE the plugin dir
+zou install-plugin --path ./kitsu-whiteboard-plugin
 ```
+
+> **Do not run `zou install-plugin --path .` from inside the plugin folder.** Zou's default `PLUGIN_FOLDER` resolves to `./plugins/`, which would nest inside your source and make `shutil.copytree` recurse into itself. Always run from the parent directory or use the ZIP.
+
+## Troubleshooting
+
+### `shutil.Error: [... /plugins/whiteboard/plugins/whiteboard/plugins/ ...]`
+
+You ran `zou install-plugin --path .` from inside the plugin directory. Fix:
+
+```bash
+rm -rf ~/kitsu-whiteboard-plugin/plugins     # clean the recursive copy
+cd ~ && zou install-plugin --path ./kitsu-whiteboard-plugin
+```
+
+### External PostgreSQL server
+
+`zou install-plugin` runs the plugin's database migration, so Zou needs to reach your Postgres before the command will succeed. Export the same variables Zou itself uses (usually set in `/opt/zou/zou_env` or your systemd unit):
+
+```bash
+export DB_HOST=db.example.com
+export DB_PORT=5432
+export DB_DATABASE=zoudb
+export DB_USERNAME=zou
+export DB_PASSWORD=******
+# OR a single DATABASE_URL:
+# export DATABASE_URL=postgresql://zou:******@db.example.com:5432/zoudb
+
+zou install-plugin --path ./kitsu-whiteboard-plugin
+```
+
+If you manage Zou with systemd, the easiest path is `source /opt/zou/zouenv/bin/activate && source /opt/zou/zou_env` (adjust paths to your install) before running the install command.
+
+### ZIP extracted with broken paths on Linux
+
+Releases from v0.1.1 onward are packed with a cross-platform tool (not PowerShell's `Compress-Archive`) and extract cleanly on Linux. If you hit this with an older release, please upgrade to the latest.
+
+### Frontend 404 after `git clone`
+
+Fixed in v0.1.0 (frontend `dist/` is committed). If you still see it, pull the latest `master`.
 
 ## Development
 
@@ -72,8 +113,10 @@ cd frontend && npm run dev
 
 ## Requirements
 
-- Kitsu / Zou with plugin support
+- Kitsu / Zou with plugin support (≥ 1.0.23 — earlier versions do not ship a plugin system)
 - PostgreSQL
+- Python 3.10+
+- Node.js 18+ (only if you build the frontend from source; not needed for ZIP install or git clone)
 
 ## License
 

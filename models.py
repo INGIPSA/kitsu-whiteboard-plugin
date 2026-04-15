@@ -9,6 +9,7 @@ class Board(db.Model, BaseMixin, SerializerMixin):
     """A whiteboard board belonging to a project."""
 
     __tablename__ = "plugin_whiteboard_board"
+    __table_args__ = {"extend_existing": True}
 
     project_id = db.Column(
         UUIDType(binary=False),
