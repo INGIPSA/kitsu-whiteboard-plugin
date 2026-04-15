@@ -50,7 +50,32 @@ Think Miro/FigJam but integrated directly into your Kitsu production pipeline wi
 zou install-plugin --path ~/kitsu-whiteboard-plugin.zip
 ```
 
-3. Restart Zou. The plugin appears in the production sidebar menu.
+3. Restart Zou:
+
+```bash
+sudo systemctl restart zou zou-events
+```
+
+## Accessing the plugin
+
+How you reach the plugin depends on your Zou/Kitsu version.
+
+### Newer Kitsu UI (≥ v1.0.23, introduced in late 2025)
+
+The plugin appears automatically in the **project sidebar menu** after you reload the page. Kitsu fetches the list of installed plugins with `frontend_project_enabled = true` and renders an entry for each.
+
+### Older Kitsu UI (no plugin-menu support)
+
+The backend plugin still works — it just doesn't get a menu entry. Share the direct URL with your team. The exact URL depends on how your Zou CLI registers plugin routes:
+
+| Zou version | Public URL (through nginx) |
+|---|---|
+| Zou **≥ 1.0.x** (auto-registration) | `https://<your-kitsu>/api/plugins/whiteboard/?project_id=<PROJECT_ID>` |
+| Zou **0.20.x** (via `init_plugin`) | `https://<your-kitsu>/api/whiteboard/?project_id=<PROJECT_ID>` |
+
+Both assume a Kitsu setup where nginx proxies `/api/` to gunicorn on `localhost:5000` (the default Kitsu install). To confirm which pattern your server uses, check `zou list-plugins` after install; if the install log prints `Routes added by whiteboard:` with paths like `/plugins/whiteboard/boards`, you're on the newer Zou and should use the `/api/plugins/whiteboard/` URL.
+
+> **Quick sanity check:** `curl -o /dev/null -w "%{http_code}\n" https://<your-kitsu>/api/whiteboard/` — expect `200` (static frontend). `curl .../api/whiteboard/boards` — expect `401` (auth gate; route is registered).
 
 ### Install from source
 
