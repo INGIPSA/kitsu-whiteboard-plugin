@@ -60,16 +60,31 @@ sudo systemctl restart zou zou-events
 
 After install + restart, the plugin appears automatically in the **project sidebar menu** alongside Shots, Sequences, Assets, Stats, etc. Kitsu fetches the list of installed plugins with `frontend_project_enabled = true` and renders one entry per plugin.
 
-If nothing shows up, confirm the plugin is registered:
+Direct URL (for sharing or deep-linking): `https://<your-kitsu>/api/plugins/whiteboard/?project_id=<PROJECT_ID>`
+
+### Verifying the install
+
+Without a JWT (fast check — just confirms routes are mounted):
 
 ```bash
-# Log in, grab the JWT from the response cookie/body, then:
-curl -H "Authorization: Bearer $JWT" https://<your-kitsu>/api/data/plugins
+# Static frontend — expect 200
+curl -o /dev/null -w "%{http_code}\n" https://<your-kitsu>/api/plugins/whiteboard/
+
+# API route — expect 401 (auth gate; this proves the route is registered)
+curl -o /dev/null -w "%{http_code}\n" https://<your-kitsu>/api/plugins/whiteboard/boards
 ```
 
-Direct URL (for sharing or debugging): `https://<your-kitsu>/api/plugins/whiteboard/?project_id=<PROJECT_ID>`
+With a JWT (confirms Kitsu sees the plugin in its registry):
 
-> **Quick sanity check:** `curl -o /dev/null -w "%{http_code}\n" https://<your-kitsu>/api/plugins/whiteboard/` — expect `200` (static frontend). `curl .../api/plugins/whiteboard/boards` — expect `401` (auth gate; route is registered).
+```bash
+# Log in once to get a JWT:
+JWT=$(curl -s -c /tmp/c.txt -X POST https://<your-kitsu>/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com","password":"..."}' | jq -r .access_token)
+
+# List installed plugins — whiteboard should appear:
+curl -H "Authorization: Bearer $JWT" https://<your-kitsu>/api/data/plugins
+```
 
 ### Install from source
 
@@ -84,6 +99,13 @@ zou install-plugin --path ./kitsu-whiteboard-plugin
 > **Do not run `zou install-plugin --path .` from inside the plugin folder.** Zou's default `PLUGIN_FOLDER` resolves to `./plugins/`, which would nest inside your source and make `shutil.copytree` recurse into itself. Always run from the parent directory or use the ZIP.
 
 ## Troubleshooting
+
+### Plugin doesn't appear in the project sidebar menu
+
+1. Confirm Kitsu is **≥ 1.0.23** — earlier versions have no plugin system. `curl https://<your-kitsu>/api/` returns the version.
+2. Confirm you're on whiteboard **≥ 0.1.4**. Earlier releases shipped a custom `init_plugin()` that registered routes under the wrong prefix and prevented Kitsu from picking the plugin up. Reinstall the latest release.
+3. Confirm the plugin is registered (see *Verifying the install* above). If `GET /api/data/plugins` doesn't list `whiteboard`, the install didn't take — check `zou list-plugins` on the server.
+4. Hard-reload Kitsu in the browser (Ctrl+Shift+R). The sidebar menu is hydrated from `/api/data/plugins` on app init, not live.
 
 ### `shutil.Error: [... /plugins/whiteboard/plugins/whiteboard/plugins/ ...]`
 
