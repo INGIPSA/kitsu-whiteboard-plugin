@@ -11,7 +11,7 @@
     <div class="entity-list">
       <div class="entity-item" :key="entity.id" draggable="true" @dragstart="onDragStart(entity, $event)" v-for="entity in filteredEntities">
         <div class="entity-thumbnail">
-          <img :src="`/api/pictures/thumbnails/preview-files/${entity.preview_file_id}.png`" v-if="entity.preview_file_id" @error="e => e.target.style.display='none'" />
+          <img :src="`/api/pictures/previews/preview-files/${entity.preview_file_id}.png`" v-if="entity.preview_file_id" @error="e => e.target.style.display='none'" />
           <span v-else style="color:#666;font-size:10px">No img</span>
         </div>
         <div class="entity-info">
