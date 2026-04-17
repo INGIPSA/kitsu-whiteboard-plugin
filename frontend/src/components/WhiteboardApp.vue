@@ -14,7 +14,22 @@
           </div>
           <div class="board-card-info">
             <div class="board-card-top">
-              <span class="board-card-name">{{ b.name }}</span>
+              <input
+                v-if="editingBoardId === b.id"
+                ref="nameInputs"
+                class="board-card-name board-card-name-input"
+                v-model="editingName"
+                @click.stop
+                @keydown.enter.prevent="commitRename(b)"
+                @keydown.esc.prevent="cancelRename"
+                @blur="commitRename(b)"
+              />
+              <span
+                v-else
+                class="board-card-name"
+                :title="'Rename'"
+                @click.stop="startRename(b)"
+              >{{ b.name }}</span>
               <div class="card-actions">
                 <button
                   class="card-action-btn"
@@ -56,7 +71,21 @@
     <div class="board-editor" v-else>
       <div class="editor-header">
         <button class="btn-back" @click="goBack">&larr; Boards</button>
-        <span class="board-name">{{ store.currentBoard.name }}</span>
+        <input
+          v-if="editingCurrent"
+          ref="headerNameInput"
+          class="board-name board-name-input"
+          v-model="editingName"
+          @keydown.enter.prevent="commitRenameCurrent"
+          @keydown.esc.prevent="cancelRename"
+          @blur="commitRenameCurrent"
+        />
+        <span
+          v-else
+          class="board-name"
+          title="Rename"
+          @click="startRenameCurrent"
+        >{{ store.currentBoard.name }}</span>
         <button class="btn" @click="saveBoard">Save</button>
         <button class="btn" @click="exportPNG">Export PNG</button>
       </div>
@@ -73,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { GlobeIcon, LinkIcon, LockIcon, Trash2Icon, UsersIcon } from 'lucide-vue-next'
 import { useBoardsStore } from '../stores/boards'
@@ -85,6 +114,11 @@ const route = useRoute()
 const store = useBoardsStore()
 const entities = useEntities()
 const canvasRef = ref(null)
+const nameInputs = ref([])
+const headerNameInput = ref(null)
+const editingBoardId = ref(null)
+const editingCurrent = ref(false)
+const editingName = ref('')
 let pendingData = null
 let saveTimer = null
 
@@ -146,6 +180,51 @@ function exportPNG() {
   canvasRef.value?.exportAsPNG()
 }
 
+function focusInput(el) {
+  if (!el) return
+  el.focus()
+  el.select()
+}
+
+async function startRename(board) {
+  editingBoardId.value = board.id
+  editingCurrent.value = false
+  editingName.value = board.name || ''
+  await nextTick()
+  const el = Array.isArray(nameInputs.value) ? nameInputs.value[0] : nameInputs.value
+  focusInput(el)
+}
+
+async function commitRename(board) {
+  if (editingBoardId.value !== board.id) return
+  const newName = editingName.value.trim()
+  editingBoardId.value = null
+  if (!newName || newName === board.name) return
+  await store.saveBoard({ ...board, name: newName })
+}
+
+async function startRenameCurrent() {
+  if (!store.currentBoard) return
+  editingCurrent.value = true
+  editingBoardId.value = null
+  editingName.value = store.currentBoard.name || ''
+  await nextTick()
+  focusInput(headerNameInput.value)
+}
+
+async function commitRenameCurrent() {
+  if (!editingCurrent.value || !store.currentBoard) return
+  const newName = editingName.value.trim()
+  editingCurrent.value = false
+  if (!newName || newName === store.currentBoard.name) return
+  await store.saveBoard({ ...store.currentBoard, name: newName })
+}
+
+function cancelRename() {
+  editingBoardId.value = null
+  editingCurrent.value = false
+}
+
 function formatDate(d) {
   if (!d) return ''
   return new Date(d).toLocaleString()
@@ -167,7 +246,9 @@ function formatDate(d) {
 .board-card-preview img { width: 100%; height: 100%; object-fit: cover; }
 .board-card-info { padding: 10px 12px; }
 .board-card-top { display: flex; align-items: center; justify-content: space-between; }
-.board-card-name { font-size: 14px; font-weight: 500; color: #fff; }
+.board-card-name { font-size: 14px; font-weight: 500; color: #fff; cursor: text; padding: 2px 4px; border-radius: 3px; }
+span.board-card-name:hover { background: rgba(255,255,255,0.08); }
+.board-card-name-input { background: #1e1e1e; border: 1px solid #3b82f6; outline: none; color: #fff; font: inherit; width: 100%; min-width: 0; }
 .card-actions { display: flex; gap: 2px; }
 .card-action-btn { width: 22px; height: 22px; border: none; background: transparent; color: #999; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .card-action-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
@@ -176,6 +257,8 @@ function formatDate(d) {
 .board-card-date { font-size: 11px; color: #888; }
 .empty { text-align: center; padding: 60px 20px; color: #888; }
 .editor-header { display: flex; align-items: center; gap: 12px; padding: 8px 16px; padding-top: 50px; border-bottom: 1px solid #333; background: #2a2a2a; }
-.board-name { font-size: 16px; font-weight: 500; color: #fff; flex: 1; }
+.board-name { font-size: 16px; font-weight: 500; color: #fff; flex: 1; cursor: text; padding: 2px 6px; border-radius: 3px; }
+span.board-name:hover { background: rgba(255,255,255,0.08); }
+.board-name-input { background: #1e1e1e; border: 1px solid #3b82f6; outline: none; color: #fff; font: inherit; }
 .editor-body { display: flex; flex: 1; overflow: hidden; }
 </style>
